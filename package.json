@@ -6,6 +6,9 @@
     "schema": "backend/prisma/schema.prisma"
   },
   "devDependencies": {
-    "cypress": "^15.16.0"
+    "@badeball/cypress-cucumber-preprocessor": "^24.0.1",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.8",
+    "cypress": "^15.16.0",
+    "esbuild": "^0.28.0"
   }
 }
