@@ -14,46 +14,37 @@ const PositionsDetails = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchInterviewFlow = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch(`http://localhost:3010/positions/${id}/interviewFlow`);
-                const data = await response.json();
-                const interviewSteps = data.interviewFlow.interviewFlow.interviewSteps.map(step => ({
+                const [flowResponse, candidatesResponse] = await Promise.all([
+                    fetch(`http://localhost:3010/positions/${id}/interviewFlow`),
+                    fetch(`http://localhost:3010/positions/${id}/candidates`)
+                ]);
+
+                const flowData = await flowResponse.json();
+                const candidatesData = await candidatesResponse.json();
+
+                const interviewSteps = flowData.interviewFlow.interviewFlow.interviewSteps.map(step => ({
                     title: step.name,
                     id: step.id,
-                    candidates: []
+                    candidates: candidatesData
+                        .filter(candidate => candidate.currentInterviewStep === step.name)
+                        .map(candidate => ({
+                            id: candidate.candidateId.toString(),
+                            name: candidate.fullName,
+                            rating: candidate.averageScore,
+                            applicationId: candidate.applicationId
+                        }))
                 }));
+
                 setStages(interviewSteps);
-                setPositionName(data.interviewFlow.positionName);
+                setPositionName(flowData.interviewFlow.positionName);
             } catch (error) {
-                console.error('Error fetching interview flow:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        const fetchCandidates = async () => {
-            try {
-                const response = await fetch(`http://localhost:3010/positions/${id}/candidates`);
-                const candidates = await response.json();
-                setStages(prevStages =>
-                    prevStages.map(stage => ({
-                        ...stage,
-                        candidates: candidates
-                            .filter(candidate => candidate.currentInterviewStep === stage.title)
-                            .map(candidate => ({
-                                id: candidate.candidateId.toString(),
-                                name: candidate.fullName,
-                                rating: candidate.averageScore,
-                                applicationId: candidate.applicationId
-                            }))
-                    }))
-                );
-            } catch (error) {
-                console.error('Error fetching candidates:', error);
-            }
-        };
-
-        fetchInterviewFlow();
-        fetchCandidates();
+        fetchData();
     }, [id]);
 
     const updateCandidateStep = async (candidateId, applicationId, newStep) => {

@@ -1,8 +1,12 @@
-import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
+import { Given, When, Then, Before } from "@badeball/cypress-cucumber-preprocessor";
 import positionPage from "../pages/PositionPage";
 
 let positionId = null;
 let targetStepId = null;
+
+Before(() => {
+  cy.exec("node backend/prisma/reset-db.js");
+});
 
 Given("que el reclutador ha iniciado sesión en la plataforma de reclutamiento", () => {
   cy.visit("/");
